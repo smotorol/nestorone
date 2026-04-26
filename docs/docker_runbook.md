@@ -21,6 +21,7 @@ docker compose -f docker/docker-compose.yml config
 docker compose -f docker/docker-compose.yml down -v
 docker compose -f docker/docker-compose.yml up -d --build
 docker compose -f docker/docker-compose.yml ps
+docker compose -f docker/docker-compose.yml ps -a
 ```
 
 기본 실행 순서:
@@ -80,7 +81,19 @@ docker compose -f docker/docker-compose.yml run --rm db-migrator
 - migration history 중복 row 없음
 - checksum 불일치 시 명확한 경고 또는 실패
 
-## 7. 장애 대응
+## 7. GHCR 이미지 실행
+
+GHCR 발행 이후에는 아래처럼 override compose 를 사용할 수 있다.
+
+```powershell
+$env:GHCR_OWNER='your-github-id'
+$env:GHCR_REPO='your-repo-name'
+$env:GHCR_TAG='v0.1.0'
+cd docker
+docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
+```
+
+## 8. 장애 대응
 
 ### SP2-0734 발생
 
@@ -111,12 +124,12 @@ docker compose -f docker/docker-compose.yml run --rm db-migrator
 - Linux containers 모드 확인
 - `docker context ls` 확인
 
-## 8. 현재 문서 기준 주의사항
+## 9. 현재 문서 기준 주의사항
 
 - Docker 통합 실행은 실제로 검증했다.
-- 다만 clean run 반복 시 로컬 Docker Compose 상태가 간헐적으로 불안정했던 적이 있어, 문제 발생 시 `docker compose ps`, `docker ps -a`, `docker logs` 를 함께 확인하는 것이 좋다.
+- clean run 반복 안정성은 한 번 더 확인하는 것이 좋다.
 
-## 9. 권장 절차
+## 10. 권장 절차
 
 1. Docker daemon 확인
 2. Oracle baseline init

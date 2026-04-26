@@ -1,5 +1,5 @@
-param(
-    [string]$BaseUrl = 'http://localhost:5138',
+﻿param(
+    [string]$BaseUrl = 'http://localhost:8080',
     [Nullable[long]]$SuccessProductId = $null,
     [int]$SuccessOrderQty = 1,
     [Nullable[long]]$ShortageProductId = $null,
@@ -15,29 +15,36 @@ function Write-Step([string]$message) {
     Write-Host "`n==== $message ====" -ForegroundColor Cyan
 }
 
-function Show-ApiError($errorRecord) {
-    Write-Host '[실패 응답]' -ForegroundColor Red
-
+function Get-ErrorBody($errorRecord) {
     $response = $errorRecord.Exception.Response
     if ($null -eq $response) {
-        Write-Host $errorRecord.Exception.Message -ForegroundColor Red
-        return
+        return $errorRecord.Exception.Message
     }
 
     try {
         $stream = $response.GetResponseStream()
         $reader = New-Object System.IO.StreamReader($stream)
-        $body = $reader.ReadToEnd()
-        if ($body) {
-            Write-Host $body -ForegroundColor Yellow
-        }
-        else {
-            Write-Host $errorRecord.Exception.Message -ForegroundColor Red
-        }
+        return $reader.ReadToEnd()
     }
     catch {
-        Write-Host $errorRecord.Exception.Message -ForegroundColor Red
+        return $errorRecord.Exception.Message
     }
+}
+
+function Show-ApiError($errorRecord) {
+    Write-Host '[실패 응답]' -ForegroundColor Red
+    $body = Get-ErrorBody $errorRecord
+    if ($body) {
+        Write-Host $body -ForegroundColor Yellow
+    }
+}
+
+function Assert-Equals([string]$label, $actual, $expected) {
+    if ($actual -ne $expected) {
+        throw "$label 값이 예상과 다릅니다. expected=$expected actual=$actual"
+    }
+
+    Write-Host ("[OK] {0}: {1}" -f $label, $actual) -ForegroundColor Green
 }
 
 function Get-Products([string]$ApiBaseUrl) {
@@ -64,10 +71,12 @@ try {
     Write-Step '1. Health 확인'
     $health = Invoke-RestMethod -Method Get -Uri "$BaseUrl/health"
     $health | ConvertTo-Json -Depth 5
+    Assert-Equals -label 'health.status' -actual $health.status -expected 'Healthy'
 
     Write-Step '2. Swagger 확인'
     $swagger = Invoke-WebRequest -UseBasicParsing -Uri "$BaseUrl/swagger/index.html"
     Write-Host ("Swagger HTTP Status: {0}" -f $swagger.StatusCode) -ForegroundColor Green
+    Assert-Equals -label 'swagger.statusCode' -actual $swagger.StatusCode -expected 200
 
     Write-Step '3. 상품 목록 조회'
     $products = Get-Products -ApiBaseUrl $BaseUrl
@@ -110,6 +119,8 @@ try {
         -Body $createBody
 
     $createResponse | ConvertTo-Json -Depth 5
+    Assert-Equals -label 'create.success' -actual $createResponse.success -expected $true
+    Assert-Equals -label 'create.code' -actual $createResponse.code -expected 'SUCCESS'
 
     $orderId = $createResponse.data.orderId
     if (-not $orderId) {
@@ -129,6 +140,8 @@ try {
         -Body $cancelBody
 
     $cancelResponse | ConvertTo-Json -Depth 5
+    Assert-Equals -label 'cancel.success' -actual $cancelResponse.success -expected $true
+    Assert-Equals -label 'cancel.code' -actual $cancelResponse.code -expected 'SUCCESS'
 
     Write-Step '6. 재고 부족 실패 테스트'
     if ($ShortageProductId.HasValue) {
@@ -170,9 +183,17 @@ try {
 
         Write-Host '재고 부족 테스트가 실패하지 않았습니다. 응답을 확인하세요.' -ForegroundColor Yellow
         $shortageResponse | ConvertTo-Json -Depth 5
+        throw '재고 부족 테스트가 예상대로 실패하지 않았습니다.'
     }
     catch {
+        $body = Get-ErrorBody $_
         Show-ApiError $_
+
+        if ($body) {
+            $json = $body | ConvertFrom-Json
+            Assert-Equals -label 'shortage.code' -actual $json.Code -expected 'ERR_STOCK_SHORTAGE'
+            Assert-Equals -label 'shortage.message' -actual $json.Message -expected '재고가 부족합니다.'
+        }
     }
 
     Write-Step '테스트 완료'

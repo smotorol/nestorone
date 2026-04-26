@@ -12,6 +12,7 @@ Oracle DB, ASP.NET Core API, WinForms Client를 기반으로 한 주문/재고 �
 - ASP.NET Core Web API 계층 구조
 - WinForms 기반 Windows 테스트 클라이언트
 - Docker Compose 기반 로컬 Oracle 개발 환경
+- GitHub Actions / GHCR 기반 CI/CD 준비
 
 ## 기술 스택
 
@@ -87,20 +88,17 @@ WinForms는 이 프로젝트에서 운영용 UI가 아니라 Windows 데스크�
 - 선택 상품 주문 생성
 - 결과 메시지 표시
 
-## WinForms와 WPF 차이
-
-- WinForms
-  - 빠르게 데스크톱 테스트 UI를 만들기 좋다.
-  - 단순한 업무 화면, 관리자 도구, 내부 툴 느낌을 내기 쉽다.
-- WPF
-  - MVVM, 바인딩, 복잡한 UI 구성에 더 유리하다.
-  - 화면 규모와 표현력이 커질수록 장점이 커진다.
-
-이 프로젝트는 포트폴리오 범위를 과도하게 키우지 않고 API/Oracle 설명에 집중하기 위해 WinForms를 선택했다.
-
 ## 실행 방법
 
-### 1. Docker Compose 통합 실행
+### 1. 로컬 Docker 배포 절차
+
+권장 스크립트:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\deploy-local-docker.ps1
+```
+
+수동 명령:
 
 ```powershell
 cd docker
@@ -112,55 +110,46 @@ docker logs orderinventory-db-migrator
 docker logs orderinventory-api
 ```
 
-기본 흐름:
-
-1. `oracle` 기동
-2. `db-migrator` 실행
-3. `api` 실행
-
 확인 주소:
 
 - `http://localhost:8080/health`
 - `http://localhost:8080/swagger`
 
-### 2. 로컬 실행 대안
+### 2. 로컬 publish exe 배포 절차
 
-필요하면 Oracle은 Docker로 실행하고, `DbMigrator` 와 `API` 는 로컬에서 실행할 수 있다. 디버깅과 브레이크포인트 확인이 필요할 때 유용하다.
+publish:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\publish-api-local.ps1
+```
+
+실행:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run-api-published.ps1
+```
+
+기본 주소:
+
+- `http://localhost:5138/health`
+- `http://localhost:5138/swagger`
 
 ## 테스트 방법
 
-### Docker 기준 핵심 검증 순서
-
-1. `http://localhost:8080/health`
-2. `http://localhost:8080/swagger`
-3. `GET /api/products`
-4. `POST /api/orders`
-5. `POST /api/orders/{id}/cancel`
-6. 재고 부족 실패 시나리오 확인
-
-PowerShell 예시:
+Docker 기준 핵심 검증 스크립트:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\test-api-flow.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\test-api-flow.ps1 -BaseUrl 'http://localhost:8080'
 ```
 
-### Oracle 검증 SQL
+확인 항목:
 
-```sql
-SELECT object_name, object_type, status
-FROM user_objects
-WHERE object_name IN ('PKG_ORDER', 'DB_SCRIPT_MIGRATION_HISTORY')
-ORDER BY object_type, object_name;
-
-SELECT name, type, line, position, text
-FROM user_errors
-WHERE name = 'PKG_ORDER'
-ORDER BY sequence;
-
-SELECT script_name, success_yn, applied_at
-FROM db_script_migration_history
-ORDER BY applied_at;
-```
+- `/health`
+- `/swagger`
+- 상품 조회
+- 주문 생성
+- 주문 취소
+- 재고 부족 실패 응답 code/message
 
 ## CI/CD 준비
 
@@ -169,14 +158,53 @@ ORDER BY applied_at;
   - Ubuntu에서 API/DbMigrator Docker 이미지 build 검증
 - CD: `.github/workflows/cd-docker.yml`
   - 태그 push 또는 수동 실행 시 GHCR로 Docker 이미지 발행
-- 추가 메모: `docs/ci_cd.md`
+- 배포 문서
+  - `docs/ci_cd.md`
+  - `docs/local_deploy.md`
+
+## GitHub Actions CI 첫 실행 방법
+
+```powershell
+git status
+git add .
+git commit -m "Prepare local deployment and CI/CD docs"
+git push origin main
+```
+
+확인 위치:
+
+- GitHub repository > Actions
+
+## GHCR CD 발행 방법
+
+```powershell
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+기본 태그 전략:
+
+- `latest`
+- `v0.1.0` 같은 버전 태그
+- `sha-xxxx`
+
+## GHCR 이미지 로컬 실행 방법
+
+```powershell
+docker login ghcr.io
+$env:GHCR_OWNER='your-github-id'
+$env:GHCR_REPO='your-repo-name'
+$env:GHCR_TAG='v0.1.0'
+cd docker
+docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
+```
 
 ## 현재 검증 상태
 
 실제로 확인한 항목:
 
 - `docker compose config` 성공
-- Docker 통합 구조에서 Oracle, DbMigrator, API 단계별 기동 확인
+- Docker 통합 구조에서 Oracle, DbMigrator, API 기동 확인
 - `/health` HTTP 200 확인
 - `/swagger` HTTP 200 확인
 - 상품 조회 성공 확인
@@ -186,12 +214,16 @@ ORDER BY applied_at;
 - `PKG_ORDER` PACKAGE / PACKAGE BODY `VALID` 확인
 - `DB_SCRIPT_MIGRATION_HISTORY` 적용 이력 확인
 - DbMigrator 재실행 시 `SKIP` 확인
+- API publish 성공
+- publish output 에 `OrderInventory.Migrations.dll` 포함 확인
+- Oracle business error 메시지 단축 확인
 
 아직 확인하지 않은 항목:
 
+- publish exe 실행 후 `/health` 직접 확인
 - GitHub Actions CI 원격 실행 결과
 - GHCR 실제 이미지 발행 결과
-- Docker Compose clean run 반복 실행 안정성
+- GHCR 이미지 pull 실행 결과
 
 ## 면접 설명 포인트
 

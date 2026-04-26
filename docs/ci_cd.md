@@ -87,22 +87,72 @@ GHCR 로그인:
 - 실제 owner/repo 이름에 따라 이미지 경로가 달라진다.
 - 현재 workflow 는 `github.repository_owner` 와 `github.event.repository.name` 를 기준으로 태그를 생성한다.
 
-## 5. Docker 실행 흐름
+## 5. GitHub Actions CI 첫 실행 방법
 
-Docker 환경에서는 API startup migration 을 끄고 `db-migrator` 가 DB 변경 책임을 가진다.
+```powershell
+git status
+git add .
+git commit -m "Prepare local deployment and CI/CD docs"
+git push origin main
+```
 
-실행 순서:
+확인 위치:
 
-1. `oracle` 기동
-2. `db-migrator` 실행
-3. `api` 실행
+- GitHub repository > Actions
+- `ci` workflow 실행 결과 확인
 
-의존 관계:
+CI가 확인하는 항목:
 
-- `db-migrator` 는 `oracle healthy` 이후 실행
-- `api` 는 `db-migrator service_completed_successfully` 이후 실행
+- 솔루션 restore
+- 솔루션 build
+- API publish
+- DbMigrator publish
+- API Docker build
+- DbMigrator Docker build
 
-## 6. 로컬 검증 명령
+## 6. GHCR CD 발행 방법
+
+```powershell
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+또는 GitHub Actions 화면에서 `workflow_dispatch` 로 수동 실행 가능하다.
+
+확인 위치:
+
+- GitHub repository > Actions > `cd-docker`
+- GitHub Packages / GHCR 패키지 목록
+
+## 7. GHCR 이미지 로컬 실행 방법
+
+### 로그인
+
+```powershell
+docker login ghcr.io
+```
+
+### 환경변수 예시
+
+```powershell
+$env:GHCR_OWNER = 'your-github-id'
+$env:GHCR_REPO = 'your-repo-name'
+$env:GHCR_TAG = 'v0.1.0'
+```
+
+### 실행
+
+```powershell
+cd docker
+docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
+```
+
+설명:
+
+- 기본 `docker-compose.yml` 은 Oracle 설정을 유지한다.
+- `docker-compose.ghcr.yml` 은 `api`, `db-migrator` 이미지를 GHCR 기준으로 덮어쓴다.
+
+## 8. 로컬 검증 명령
 
 ### Docker Compose 전체 실행
 
@@ -137,33 +187,27 @@ docker compose run --rm db-migrator
 - 중복 row 없음
 - checksum 불일치 시 실패 또는 경고
 
-## 7. GitHub Actions 첫 실행 전 체크리스트
+## 9. GitHub Actions 첫 실행 전 체크리스트
 
 - 저장소 루트에 `OrderInventory.sln` 이 존재하는지 확인
 - `src/OrderInventory.Api/Dockerfile` 경로가 맞는지 확인
 - `src/OrderInventory.DbMigrator/Dockerfile` 경로가 맞는지 확인
 - 로컬에서 `dotnet restore OrderInventory.sln` 가 되는지 확인
 - 로컬에서 `dotnet build OrderInventory.sln` 가 되는지 확인
+- 로컬에서 `dotnet publish src/OrderInventory.Api/OrderInventory.Api.csproj` 가 되는지 확인
 - Docker Desktop 또는 Docker Engine 환경에서 Dockerfile build 가 되는지 확인
 - GitHub Packages / GHCR 사용 권한이 저장소 또는 조직 정책에서 허용되는지 확인
 - package visibility 기본값을 확인하고 필요하면 조직 정책에 맞게 조정
 - `v1.0.0` 형식으로 태그를 push 할 계획인지 확인
 
-태그 push 예시:
-
-```powershell
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-## 8. 실패 시 확인 위치
+## 10. 실패 시 확인 위치
 
 - CI/CD 실행 화면: GitHub repository > Actions
 - Docker build 실패: 해당 job 의 build step 로그
 - dotnet publish 실패: Windows job 의 publish step 로그
 - GHCR push 실패: `docker/login-action`, `docker/build-push-action` 단계 로그
 
-## 9. 현재 판단
+## 11. 현재 판단
 
 - CI workflow 현재 상태: 정적 검토 완료
 - CD/GHCR 발행 준비 상태: workflow 와 태그 전략 준비 완료

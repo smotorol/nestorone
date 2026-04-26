@@ -1,0 +1,8 @@
+﻿services:
+  db-migrator:
+    image: ghcr.io/${GHCR_OWNER}/${GHCR_REPO}-orderinventory-db-migrator:${GHCR_TAG}
+    build: null
+
+  api:
+    image: ghcr.io/${GHCR_OWNER}/${GHCR_REPO}-orderinventory-api:${GHCR_TAG}
+    build: null

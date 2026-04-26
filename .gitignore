@@ -1,4 +1,4 @@
-/.dotnet_home
+﻿/.dotnet_home
 /.appdata
 
 # Build output
@@ -19,4 +19,9 @@ obj/
 .publish/
 
 # Logs
+logs/
 *.log
+
+# Local secrets
+.env
+appsettings.Local.json

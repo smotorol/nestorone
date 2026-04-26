@@ -25,7 +25,7 @@ public sealed class GlobalExceptionMiddleware
         catch (OracleException ex)
         {
             _logger.LogError(ex, "Oracle exception at {Path}. Code={Code}", context.Request.Path, ex.Number);
-            await WriteErrorAsync(context, MapStatusCode(ex.Number), MapCode(ex.Number), ex.Message);
+            await WriteErrorAsync(context, MapStatusCode(ex.Number), MapCode(ex.Number), MapMessage(ex.Number));
         }
         catch (Exception ex)
         {
@@ -67,5 +67,15 @@ public sealed class GlobalExceptionMiddleware
             20003 => "ERR_ORDER_NOT_FOUND",
             20004 => "ERR_ALREADY_CANCELLED",
             _ => "ERR_ORACLE"
+        };
+
+    private static string MapMessage(int oracleCode)
+        => oracleCode switch
+        {
+            20001 => "재고가 부족합니다.",
+            20002 => "유효하지 않은 상품입니다.",
+            20003 => "주문을 찾을 수 없습니다.",
+            20004 => "이미 취소된 주문입니다.",
+            _ => "데이터베이스 처리 중 오류가 발생했습니다."
         };
 }

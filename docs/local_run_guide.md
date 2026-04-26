@@ -23,6 +23,12 @@ docker logs orderinventory-db-migrator
 docker logs orderinventory-api
 ```
 
+간단 실행 스크립트:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\deploy-local-docker.ps1
+```
+
 확인:
 
 - Oracle Listener: `localhost:1521`
@@ -89,15 +95,30 @@ scripts\start-api.bat
 
 ## 5. publish exe 실행
 
+권장 스크립트:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\publish-api-local.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\run-api-published.ps1
+```
+
+수동 명령:
+
 ```powershell
 dotnet publish .\src\OrderInventory.Api\OrderInventory.Api.csproj -c Release -o .\.publish\api
 .\.publish\api\OrderInventory.Api.exe
 ```
 
+또는
+
+```powershell
+dotnet .\.publish\api\OrderInventory.Api.dll
+```
+
 주의:
 
-- 현재 로컬 publish 는 사용자 환경의 NuGet/권한 상태에 영향을 받을 수 있다.
-- GitHub Actions CI 에서는 publish 검증 단계를 별도로 둔다.
+- 현재 로컬 publish 는 검증 완료
+- publish output 에 `OrderInventory.Migrations.dll` 포함 여부를 확인하도록 스크립트를 추가했다.
 
 ## 6. 검증
 
@@ -115,7 +136,7 @@ dotnet publish .\src\OrderInventory.Api\OrderInventory.Api.csproj -c Release -o 
 자동 테스트 스크립트:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\test-api-flow.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\test-api-flow.ps1 -BaseUrl 'http://localhost:8080'
 ```
 
 ## 7. WinForms 실행
@@ -135,10 +156,12 @@ dotnet run --project .\src\OrderInventory.Client.WinForms\OrderInventory.Client.
 실제로 확인한 항목:
 
 - 로컬 `dotnet run` 기준 API 실행
-- `/health` 와 `/swagger` 확인
+- Docker 기준 `/health` 와 `/swagger` 확인
 - 상품 조회 / 주문 생성 / 주문 취소 / 재고 부족 실패 시나리오 확인
+- API publish 성공
+- publish output 에 `OrderInventory.Migrations.dll` 포함 확인
 
 아직 별도 확인이 필요한 항목:
 
-- 로컬 publish exe 반복 검증
+- publish exe 실행 후 `/health` 직접 확인
 - GitHub Actions 원격 publish 결과 확인
