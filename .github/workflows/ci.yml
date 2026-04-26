@@ -1,0 +1,67 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+
+jobs:
+  dotnet-build:
+    runs-on: windows-latest
+
+    steps:
+      - name: 소스 체크아웃
+        uses: actions/checkout@v4
+
+      - name: .NET 7 SDK 설치
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 7.0.x
+
+      - name: NuGet 패키지 복원
+        run: dotnet restore OrderInventory.sln
+
+      - name: 솔루션 빌드
+        run: dotnet build OrderInventory.sln --no-restore --configuration Release
+
+      - name: API publish 검증
+        run: dotnet publish src/OrderInventory.Api/OrderInventory.Api.csproj -c Release -o ./.publish/api /p:UseAppHost=false
+
+      - name: DbMigrator publish 검증
+        run: dotnet publish src/OrderInventory.DbMigrator/OrderInventory.DbMigrator.csproj -c Release -o ./.publish/db-migrator /p:UseAppHost=false
+
+      - name: 산출물 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: orderinventory-build-artifacts
+          path: |
+            ./.publish/api
+            ./.publish/db-migrator
+
+  docker-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 소스 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Docker Buildx 설정
+        uses: docker/setup-buildx-action@v3
+
+      - name: API Docker 이미지 빌드 검증
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/OrderInventory.Api/Dockerfile
+          push: false
+          tags: orderinventory-api:ci
+
+      - name: DbMigrator Docker 이미지 빌드 검증
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/OrderInventory.DbMigrator/Dockerfile
+          push: false
+          tags: orderinventory-db-migrator:ci

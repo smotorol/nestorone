@@ -1,0 +1,22 @@
+/.dotnet_home
+/.appdata
+
+# Build output
+bin/
+obj/
+
+# Visual Studio
+.vs/
+
+# Rider
+.idea/
+
+# User files
+*.user
+*.suo
+
+# Publish output
+.publish/
+
+# Logs
+*.log

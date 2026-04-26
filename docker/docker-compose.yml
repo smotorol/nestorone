@@ -1,0 +1,72 @@
+services:
+  oracle:
+    image: gvenzl/oracle-free:latest
+    container_name: orderinventory-oracle
+    restart: unless-stopped
+    ports:
+      - "1521:1521"
+      - "5500:5500"
+    environment:
+      ORACLE_PASSWORD: OracleSys1234!
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+      - ./oracle/init:/container-entrypoint-initdb.d:ro
+      - ../db:/opt/oracle/scripts/app-db:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 20s
+      timeout: 10s
+      retries: 15
+      start_period: 120s
+    networks:
+      - orderinventory-net
+
+  db-migrator:
+    build:
+      context: ..
+      dockerfile: src/OrderInventory.DbMigrator/Dockerfile
+    container_name: orderinventory-db-migrator
+    restart: "no"
+    depends_on:
+      oracle:
+        condition: service_healthy
+    environment:
+      ORACLE_CONNECTION_STRING: User Id=app_user;Password=AppUser1234!;Data Source=oracle:1521/FREEPDB1
+      SQL_MIGRATIONS_PATH: /app/db/migrations_sql
+      DBMIGRATOR_SHOW_SUMMARY: "true"
+    networks:
+      - orderinventory-net
+
+  api:
+    build:
+      context: ..
+      dockerfile: src/OrderInventory.Api/Dockerfile
+    container_name: orderinventory-api
+    restart: unless-stopped
+    depends_on:
+      oracle:
+        condition: service_healthy
+      db-migrator:
+        condition: service_completed_successfully
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_URLS: http://+:8080
+      ORACLE_CONNECTION_STRING: User Id=app_user;Password=AppUser1234!;Data Source=oracle:1521/FREEPDB1
+      Database__ApplyMigrationsOnStartup: "false"
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - orderinventory-net
+
+volumes:
+  oracle_data:
+
+networks:
+  orderinventory-net:
+    driver: bridge

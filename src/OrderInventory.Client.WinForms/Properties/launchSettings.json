@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "OrderInventory.Client.WinForms": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ORDERINVENTORY_API_BASE_URL": "http://localhost:5138"
+      }
+    }
+  }
+}
