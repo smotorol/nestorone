@@ -16,10 +16,10 @@ jobs:
 
     steps:
       - name: 소스 체크아웃
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: .NET 8 SDK 설치
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 8.0.x
 
@@ -36,7 +36,7 @@ jobs:
         run: dotnet publish src/OrderInventory.DbMigrator/OrderInventory.DbMigrator.csproj -c Release -o ./.publish/db-migrator /p:UseAppHost=false
 
       - name: 산출물 업로드
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: orderinventory-build-artifacts
           path: |
@@ -48,13 +48,13 @@ jobs:
 
     steps:
       - name: 소스 체크아웃
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Docker Buildx 설정
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: API Docker 이미지 빌드 검증
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: src/OrderInventory.Api/Dockerfile
@@ -62,7 +62,7 @@ jobs:
           tags: orderinventory-api:ci
 
       - name: DbMigrator Docker 이미지 빌드 검증
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: src/OrderInventory.DbMigrator/Dockerfile
