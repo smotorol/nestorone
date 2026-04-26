@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+﻿FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 COPY ["src/OrderInventory.Api/OrderInventory.Api.csproj", "src/OrderInventory.Api/"]
@@ -14,7 +14,7 @@ COPY . .
 RUN dotnet build "src/OrderInventory.Migrations/OrderInventory.Migrations.csproj" -c Release
 RUN dotnet publish "src/OrderInventory.Api/OrderInventory.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \

@@ -1,4 +1,4 @@
-# 프로젝트 요약본
+﻿# 프로젝트 요약본
 
 ## 프로젝트 한 줄 설명
 
@@ -7,10 +7,10 @@ Oracle DB, PL/SQL package, EF Core Migration, SQL Script Migration, ASP.NET Core
 ## 기술 스택
 
 - Oracle Free / PL/SQL
-- ASP.NET Core Web API (.NET 7)
+- ASP.NET Core Web API (.NET 8)
 - EF Core / Oracle EntityFrameworkCore
 - Oracle.ManagedDataAccess / Dapper
-- WinForms (.NET 7 Windows)
+- WinForms (.NET 8 Windows)
 - Docker Compose / Serilog / Swagger
 
 ## 프로젝트 구성
@@ -55,3 +55,4 @@ Oracle DB, PL/SQL package, EF Core Migration, SQL Script Migration, ASP.NET Core
 ## 면접용 30초 설명
 
 이 프로젝트는 Oracle 실무 경험을 보여주기 위해 주문 생성과 취소 같은 핵심 트랜잭션을 PL/SQL package로 처리하고, 상품 조회는 EF Core read model로 분리한 구조입니다. DB 변경 관리도 EF Core Migration과 Oracle 전용 SQL Script Migration을 나눠서 운영성을 높였고, ASP.NET Core API와 WinForms 클라이언트로 전체 흐름을 직접 검증할 수 있게 구성했습니다.
+

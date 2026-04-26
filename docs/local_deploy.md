@@ -12,7 +12,7 @@
 
 - Docker Desktop 실행
 - Docker Desktop 이 Linux container 모드인지 확인
-- .NET 7 SDK 설치
+- .NET 8 SDK 설치
 - PowerShell 실행 가능 환경 준비
 
 ## 3. 로컬 Docker 배포 절차
@@ -164,3 +164,4 @@ powershell -ExecutionPolicy Bypass -File .\scripts\test-api-flow.ps1 -BaseUrl 'h
 
 - 현재는 `GlobalExceptionMiddleware` 에서 Oracle business error 를 짧은 사용자 메시지로 변환한다.
 - 내부 상세 원문은 서버 로그를 확인한다.
+

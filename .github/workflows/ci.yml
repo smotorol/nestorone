@@ -1,4 +1,7 @@
-name: ci
+﻿name: ci
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
   push:
@@ -15,10 +18,10 @@ jobs:
       - name: 소스 체크아웃
         uses: actions/checkout@v4
 
-      - name: .NET 7 SDK 설치
+      - name: .NET 8 SDK 설치
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 7.0.x
+          dotnet-version: 8.0.x
 
       - name: NuGet 패키지 복원
         run: dotnet restore OrderInventory.sln

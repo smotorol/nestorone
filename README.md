@@ -17,8 +17,8 @@ Oracle DB, ASP.NET Core API, WinForms Client를 기반으로 한 주문/재고 �
 ## 기술 스택
 
 - DB: Oracle Free / Oracle SQL / PL/SQL
-- Server: ASP.NET Core Web API (.NET 7)
-- Client: WinForms (.NET 7 Windows)
+- Server: ASP.NET Core Web API (.NET 8)
+- Client: WinForms (.NET 8 Windows)
 - ORM / DB Access: EF Core, Oracle.EntityFrameworkCore, Oracle.ManagedDataAccess, Dapper
 - Migration: EF Core Migration + SQL Script Migration + DbMigrator
 - Infra: Docker Compose, Serilog, Swagger, GitHub Actions, GHCR
@@ -231,3 +231,4 @@ docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
 - EF Core Migration과 SQL Script Migration을 병행해 Oracle 고유 기능까지 관리 가능한 구조로 만들었다.
 - Docker 환경에서는 API startup migration을 끄고 DbMigrator가 DB 변경 책임을 맡게 해 운영 흐름을 분리했다.
 - WinForms 클라이언트를 붙여 API 기능 검증과 Windows 클라이언트 연동 경험까지 보여주도록 구성했다.
+
