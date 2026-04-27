@@ -1,6 +1,5 @@
 using Oracle.ManagedDataAccess.Client;
 using OrderInventory.DbMigrator.Services;
-using OrderInventory.Migrations;
 
 var connectionString = Environment.GetEnvironmentVariable("ORACLE_CONNECTION_STRING")
     ?? throw new InvalidOperationException("ORACLE_CONNECTION_STRING is required.");
@@ -9,9 +8,6 @@ var scriptsPath = ResolveScriptsPath();
 var showSummary = !string.Equals(Environment.GetEnvironmentVariable("DBMIGRATOR_SHOW_SUMMARY"), "false", StringComparison.OrdinalIgnoreCase);
 
 Console.WriteLine($"[DbMigrator] SQL scripts path: {scriptsPath}");
-Console.WriteLine("[DbMigrator] Applying EF Core migrations...");
-await MigrationRunner.ApplyMigrationsAsync(connectionString);
-
 Console.WriteLine("[DbMigrator] Applying SQL script migrations...");
 var runner = new SqlScriptMigrationRunner(connectionString, scriptsPath);
 await runner.RunAsync();

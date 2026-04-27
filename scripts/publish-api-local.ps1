@@ -1,10 +1,11 @@
-﻿param(
+param(
     [string]$ProjectPath = 'G:\Programing\Work\nestorone\nestorone\src\OrderInventory.Api\OrderInventory.Api.csproj',
     [string]$OutputDir = 'G:\Programing\Work\nestorone\nestorone\.publish\api'
 )
 
 $ErrorActionPreference = 'Stop'
 $env:DOTNET_CLI_HOME = 'G:\Programing\Work\nestorone\nestorone\.dotnet_home'
+$env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = '1'
 
 Write-Host '==== API publish 시작 ====' -ForegroundColor Cyan
 
@@ -13,14 +14,15 @@ if (Test-Path $OutputDir) {
 }
 
 dotnet publish $ProjectPath -c Release -o $OutputDir /p:UseAppHost=true
+if ($LASTEXITCODE -ne 0) {
+    throw "dotnet publish failed with exit code $LASTEXITCODE"
+}
 
 $requiredFiles = @(
     'OrderInventory.Api.dll',
     'OrderInventory.Application.dll',
     'OrderInventory.Domain.dll',
-    'OrderInventory.Infrastructure.dll',
-    'OrderInventory.Persistence.dll',
-    'OrderInventory.Migrations.dll'
+    'OrderInventory.Infrastructure.dll'
 )
 
 Write-Host ''

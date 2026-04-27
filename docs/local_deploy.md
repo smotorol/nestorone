@@ -1,4 +1,4 @@
-﻿# 로컬 배포 가이드
+# 로컬 배포 가이드
 
 이 문서는 포트폴리오/학습용 실무형 샘플 프로젝트를 로컬 PC에서 배포 형태로 실행하는 절차를 정리한 문서다.
 
@@ -62,7 +62,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\publish-api-local.ps1
 
 - `.publish/api` 경로 생성
 - `OrderInventory.Api.exe` 생성
-- `OrderInventory.Migrations.dll` 포함 여부 확인
+- publish 핵심 DLL 포함 여부 확인
 
 ### 실행
 
@@ -140,7 +140,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\test-api-flow.ps1 -BaseUrl 'h
 - `/health`, `/swagger`
 - 상품 조회 / 주문 생성 / 주문 취소 / 재고 부족 실패
 - publish 산출물 생성
-- publish output 에 `OrderInventory.Migrations.dll` 포함 확인
+
 
 아직 검증하지 않은 항목:
 
@@ -155,13 +155,15 @@ powershell -ExecutionPolicy Bypass -File .\scripts\test-api-flow.ps1 -BaseUrl 'h
 - Linux container 모드 확인
 - `docker version`, `docker info`, `docker context ls` 확인
 
-### publish 결과에 `OrderInventory.Migrations.dll` 누락
+### publish 결과에 필수 애플리케이션 DLL 누락
 
 - `scripts/publish-api-local.ps1` 로 publish 수행
-- `OrderInventory.Api.csproj` 가 Migrations assembly 를 build/publish 후 복사하는지 확인
+- `OrderInventory.Api.csproj` publish 결과에 필수 애플리케이션 DLL이 포함되는지 확인
 
 ### 재고 부족 응답 메시지가 길게 보일 때
 
 - 현재는 `GlobalExceptionMiddleware` 에서 Oracle business error 를 짧은 사용자 메시지로 변환한다.
 - 내부 상세 원문은 서버 로그를 확인한다.
+
+
 

@@ -13,7 +13,6 @@ if not exist "%PROJECT_PATH%" (
 if "%ASPNETCORE_ENVIRONMENT%"=="" set "ASPNETCORE_ENVIRONMENT=Development"
 if "%ASPNETCORE_URLS%"=="" set "ASPNETCORE_URLS=http://localhost:5138"
 if "%ORACLE_CONNECTION_STRING%"=="" set "ORACLE_CONNECTION_STRING=User Id=app_user;Password=AppUser1234!;Data Source=localhost:1521/FREEPDB1"
-if "%Database__ApplyMigrationsOnStartup%"=="" set "Database__ApplyMigrationsOnStartup=false"
 
 echo [INFO] ASPNETCORE_ENVIRONMENT=%ASPNETCORE_ENVIRONMENT%
 echo [INFO] ASPNETCORE_URLS=%ASPNETCORE_URLS%

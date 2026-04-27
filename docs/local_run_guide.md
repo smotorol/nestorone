@@ -1,4 +1,4 @@
-﻿# 로컬 실행 가이드
+# 로컬 실행 가이드
 
 ## 1. 지원 실행 방식
 
@@ -118,7 +118,7 @@ dotnet .\.publish\api\OrderInventory.Api.dll
 주의:
 
 - 현재 로컬 publish 는 검증 완료
-- publish output 에 `OrderInventory.Migrations.dll` 포함 여부를 확인하도록 스크립트를 추가했다.
+- publish output 에 `필수 애플리케이션 DLL` 포함 여부를 확인하도록 스크립트를 추가했다.
 
 ## 6. 검증
 
@@ -159,9 +159,10 @@ dotnet run --project .\src\OrderInventory.Client.WinForms\OrderInventory.Client.
 - Docker 기준 `/health` 와 `/swagger` 확인
 - 상품 조회 / 주문 생성 / 주문 취소 / 재고 부족 실패 시나리오 확인
 - API publish 성공
-- publish output 에 `OrderInventory.Migrations.dll` 포함 확인
+- publish output 에 `필수 애플리케이션 DLL` 포함 확인
 
 아직 별도 확인이 필요한 항목:
 
 - publish exe 실행 후 `/health` 직접 확인
 - GitHub Actions 원격 publish 결과 확인
+

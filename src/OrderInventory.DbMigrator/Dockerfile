@@ -1,9 +1,7 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 COPY ["src/OrderInventory.DbMigrator/OrderInventory.DbMigrator.csproj", "src/OrderInventory.DbMigrator/"]
-COPY ["src/OrderInventory.Migrations/OrderInventory.Migrations.csproj", "src/OrderInventory.Migrations/"]
-COPY ["src/OrderInventory.Persistence/OrderInventory.Persistence.csproj", "src/OrderInventory.Persistence/"]
 RUN dotnet restore "src/OrderInventory.DbMigrator/OrderInventory.DbMigrator.csproj"
 
 COPY . .

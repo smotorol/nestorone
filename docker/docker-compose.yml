@@ -52,7 +52,6 @@ services:
       ASPNETCORE_ENVIRONMENT: Docker
       ASPNETCORE_URLS: http://+:8080
       ORACLE_CONNECTION_STRING: User Id=app_user;Password=AppUser1234!;Data Source=oracle:1521/FREEPDB1
-      Database__ApplyMigrationsOnStartup: "false"
     ports:
       - "8080:8080"
     healthcheck:

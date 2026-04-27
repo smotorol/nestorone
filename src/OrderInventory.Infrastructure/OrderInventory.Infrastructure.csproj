@@ -1,8 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\OrderInventory.Application\OrderInventory.Application.csproj" />
     <ProjectReference Include="..\OrderInventory.Domain\OrderInventory.Domain.csproj" />
-    <ProjectReference Include="..\OrderInventory.Persistence\OrderInventory.Persistence.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,4 +17,3 @@
     <IsPublishable>false</IsPublishable>
   </PropertyGroup>
 </Project>
-

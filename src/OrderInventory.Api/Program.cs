@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 using OrderInventory.Api.Health;
 using OrderInventory.Api.Middlewares;
@@ -9,7 +8,6 @@ using OrderInventory.Application.Services;
 using OrderInventory.Infrastructure.Options;
 using OrderInventory.Infrastructure.Persistence;
 using OrderInventory.Infrastructure.Repositories;
-using OrderInventory.Persistence.Contexts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,9 +21,6 @@ var oracleConnectionString = Environment.GetEnvironmentVariable("ORACLE_CONNECTI
     ?? builder.Configuration.GetConnectionString("OracleDb")
     ?? throw new InvalidOperationException("Oracle connection string is not configured.");
 
-var applyMigrationsOnStartup = builder.Configuration.GetValue("Database:ApplyMigrationsOnStartup", false);
-const string migrationsAssemblyName = "OrderInventory.Migrations";
-
 builder.Services.AddHttpLogging(options =>
 {
     options.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestPath |
@@ -34,12 +29,6 @@ builder.Services.AddHttpLogging(options =>
 });
 
 builder.Services.AddSingleton(new OracleDbOptions { ConnectionString = oracleConnectionString });
-
-builder.Services.AddDbContext<OrderInventoryDbContext>(options =>
-    options.UseOracle(oracleConnectionString, oracleOptions =>
-    {
-        oracleOptions.MigrationsAssembly(migrationsAssemblyName);
-    }));
 
 builder.Services.AddSingleton<IOracleConnectionFactory, OracleConnectionFactory>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
@@ -62,13 +51,6 @@ var app = builder.Build();
 app.UseSerilogRequestLogging();
 app.UseHttpLogging();
 app.UseMiddleware<GlobalExceptionMiddleware>();
-
-if (applyMigrationsOnStartup)
-{
-    using var scope = app.Services.CreateScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<OrderInventoryDbContext>();
-    await dbContext.Database.MigrateAsync();
-}
 
 app.UseSwagger();
 app.UseSwaggerUI();

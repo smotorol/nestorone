@@ -1,62 +1,61 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Dapper;
 using OrderInventory.Application.Abstractions;
 using OrderInventory.Application.Dtos.Products;
-using OrderInventory.Persistence.Contexts;
+using OrderInventory.Infrastructure.Persistence;
 
 namespace OrderInventory.Infrastructure.Repositories;
 
 public sealed class ProductRepository : IProductRepository
 {
-    private readonly OrderInventoryDbContext _dbContext;
+    private readonly IOracleConnectionFactory _connectionFactory;
 
-    public ProductRepository(OrderInventoryDbContext dbContext)
+    public ProductRepository(IOracleConnectionFactory connectionFactory)
     {
-        _dbContext = dbContext;
+        _connectionFactory = connectionFactory;
     }
 
     public async Task<IReadOnlyList<ProductSummaryDto>> GetProductsAsync(string? keyword, CancellationToken cancellationToken)
     {
-        var query = _dbContext.Products
-            .AsNoTracking()
-            .Where(x => x.StatusCode == "ACTIVE")
-            .Select(x => new ProductSummaryDto
-            {
-                ProductId = (long)x.ProductId,
-                ProductCode = x.ProductCode,
-                ProductName = x.ProductName,
-                UnitPrice = x.UnitPrice,
-                CurrentStockQty = x.CurrentStockQty,
-                StatusCode = x.StatusCode,
-                CategoryName = x.Category != null ? x.Category.CategoryName : string.Empty
-            });
+        const string sql = @"
+SELECT p.product_id        AS ProductId,
+       p.product_code      AS ProductCode,
+       p.product_name      AS ProductName,
+       p.unit_price        AS UnitPrice,
+       p.current_stock_qty AS CurrentStockQty,
+       p.status_code       AS StatusCode,
+       c.category_name     AS CategoryName
+  FROM products p
+  JOIN categories c
+    ON c.category_id = p.category_id
+ WHERE p.status_code = 'ACTIVE'
+   AND (:keyword IS NULL OR p.product_name LIKE '%' || :keyword || '%')
+ ORDER BY p.product_id";
 
-        if (!string.IsNullOrWhiteSpace(keyword))
-        {
-            query = query.Where(x => x.ProductName.Contains(keyword));
-        }
-
-        return await query
-            .OrderBy(x => x.ProductId)
-            .ToListAsync(cancellationToken);
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        var command = new CommandDefinition(sql, new { keyword }, cancellationToken: cancellationToken);
+        var items = await connection.QueryAsync<ProductSummaryDto>(command);
+        return items.AsList();
     }
 
     public async Task<ProductDetailDto?> GetProductByIdAsync(long productId, CancellationToken cancellationToken)
     {
-        return await _dbContext.Products
-            .AsNoTracking()
-            .Where(x => x.ProductId == productId)
-            .Select(x => new ProductDetailDto
-            {
-                ProductId = (long)x.ProductId,
-                ProductCode = x.ProductCode,
-                ProductName = x.ProductName,
-                UnitPrice = x.UnitPrice,
-                CurrentStockQty = x.CurrentStockQty,
-                SafetyStockQty = x.SafetyStockQty,
-                StatusCode = x.StatusCode,
-                CategoryCode = x.Category != null ? x.Category.CategoryCode : string.Empty,
-                CategoryName = x.Category != null ? x.Category.CategoryName : string.Empty
-            })
-            .SingleOrDefaultAsync(cancellationToken);
+        const string sql = @"
+SELECT p.product_id         AS ProductId,
+       p.product_code       AS ProductCode,
+       p.product_name       AS ProductName,
+       p.unit_price         AS UnitPrice,
+       p.current_stock_qty  AS CurrentStockQty,
+       p.safety_stock_qty   AS SafetyStockQty,
+       p.status_code        AS StatusCode,
+       c.category_code      AS CategoryCode,
+       c.category_name      AS CategoryName
+  FROM products p
+  JOIN categories c
+    ON c.category_id = p.category_id
+ WHERE p.product_id = :productId";
+
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        var command = new CommandDefinition(sql, new { productId }, cancellationToken: cancellationToken);
+        return await connection.QuerySingleOrDefaultAsync<ProductDetailDto>(command);
     }
 }

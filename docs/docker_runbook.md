@@ -1,4 +1,4 @@
-﻿# Docker 실행 점검표
+# Docker 실행 점검표
 
 ## 1. 사전 확인
 
@@ -44,7 +44,7 @@ docker logs orderinventory-api
 - Oracle 로그에 `ORA-06550`, `PLS-00103` 가 없어야 한다.
 - `Bootstrap completed successfully.` 는 실제 성공일 때만 보여야 한다.
 - DbMigrator 가 SQL script migration을 적용하고 `Exited (0)` 상태로 끝나야 한다.
-- API 컨테이너가 `OrderInventory.Migrations` assembly 오류 없이 기동하고 healthcheck 통과 상태여야 한다.
+- API 컨테이너가 별도 migration assembly 의존 없이 기동하고 healthcheck 통과 상태여야 한다.
 
 ## 4. 실제 확인할 URL
 
@@ -106,10 +106,10 @@ docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
 - spec/body 순서 확인
 - trailing `/` 처리 확인
 
-### API가 Migrations assembly 오류로 종료
+### API가 publish output 문제로 종료
 
-- API build output 또는 publish output 에 `OrderInventory.Migrations.dll` 포함 여부 확인
-- `Program.cs` 의 `MigrationsAssembly("OrderInventory.Migrations")` 설정 확인
+- API build output 또는 publish output 에 필수 애플리케이션 DLL 포함 여부 확인
+- API project 참조 및 publish output 확인
 
 ### API healthcheck 실패
 
@@ -139,3 +139,5 @@ docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
 6. Swagger 확인
 7. 상품 조회/주문 생성/주문 취소 테스트
 8. DbMigrator 재실행 SKIP 확인
+
+

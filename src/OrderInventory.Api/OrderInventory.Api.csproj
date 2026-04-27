@@ -1,16 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <ItemGroup>
     <ProjectReference Include="..\OrderInventory.Application\OrderInventory.Application.csproj" />
     <ProjectReference Include="..\OrderInventory.Infrastructure\OrderInventory.Infrastructure.csproj" />
-    <ProjectReference Include="..\OrderInventory.Persistence\OrderInventory.Persistence.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.24" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.24">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.4" />
     <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
@@ -24,24 +19,4 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
-
-  <Target Name="BuildMigrationsAssembly" BeforeTargets="BeforeBuild;PrepareForPublish">
-    <MSBuild Projects="..\OrderInventory.Migrations\OrderInventory.Migrations.csproj"
-             Targets="Build"
-             Properties="Configuration=$(Configuration)" />
-  </Target>
-
-  <Target Name="CopyMigrationsAssemblyToOutput" AfterTargets="Build">
-    <Copy SourceFiles="..\OrderInventory.Migrations\bin\$(Configuration)\net8.0\OrderInventory.Migrations.dll"
-          DestinationFolder="$(OutDir)"
-          SkipUnchangedFiles="true"
-          Condition="Exists('..\OrderInventory.Migrations\bin\$(Configuration)\net8.0\OrderInventory.Migrations.dll')" />
-  </Target>
-
-  <Target Name="CopyMigrationsAssemblyToPublish" AfterTargets="Publish">
-    <Copy SourceFiles="..\OrderInventory.Migrations\bin\$(Configuration)\net8.0\OrderInventory.Migrations.dll"
-          DestinationFolder="$(PublishDir)"
-          SkipUnchangedFiles="true"
-          Condition="Exists('..\OrderInventory.Migrations\bin\$(Configuration)\net8.0\OrderInventory.Migrations.dll') and '$(PublishDir)' != ''" />
-  </Target>
 </Project>
