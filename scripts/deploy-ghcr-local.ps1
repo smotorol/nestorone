@@ -1,7 +1,7 @@
 ﻿param(
     [string]$GhcrOwner = 'smotorol',
     [string]$GhcrRepo = 'nestorone',
-    [string]$GhcrTag = 'v0.1.1',
+    [string]$GhcrTag = 'v0.1.3',
     [string]$ComposeDir = 'G:\Programing\Work\nestorone\nestorone\docker',
     [switch]$SkipLogin
 )
