@@ -1,5 +1,5 @@
 ﻿using OrderInventory.Application.Abstractions;
-using OrderInventory.Application.Dtos.Orders;
+using OrderInventory.Contracts.Orders;
 
 namespace OrderInventory.Application.Services;
 
@@ -12,9 +12,10 @@ public sealed class OrderService : IOrderService
         _orderRepository = orderRepository;
     }
 
-    public Task<CreateOrderResultDto> CreateOrderAsync(CreateOrderRequestDto request, CancellationToken cancellationToken)
+    public Task<CreateOrderResult> CreateOrderAsync(CreateOrderRequest request, CancellationToken cancellationToken)
         => _orderRepository.CreateOrderAsync(request, cancellationToken);
 
-    public Task<CancelOrderResultDto> CancelOrderAsync(long orderId, CancelOrderRequestDto request, CancellationToken cancellationToken)
+    public Task<CancelOrderResult> CancelOrderAsync(long orderId, CancelOrderRequest request, CancellationToken cancellationToken)
         => _orderRepository.CancelOrderAsync(orderId, request, cancellationToken);
 }
+

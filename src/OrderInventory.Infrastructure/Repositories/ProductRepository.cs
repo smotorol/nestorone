@@ -1,6 +1,6 @@
-using Dapper;
+﻿using Dapper;
 using OrderInventory.Application.Abstractions;
-using OrderInventory.Application.Dtos.Products;
+using OrderInventory.Contracts.Products;
 using OrderInventory.Infrastructure.Persistence;
 
 namespace OrderInventory.Infrastructure.Repositories;
@@ -14,7 +14,7 @@ public sealed class ProductRepository : IProductRepository
         _connectionFactory = connectionFactory;
     }
 
-    public async Task<IReadOnlyList<ProductSummaryDto>> GetProductsAsync(string? keyword, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<ProductSummary>> GetProductsAsync(string? keyword, CancellationToken cancellationToken)
     {
         const string sql = @"
 SELECT p.product_id        AS ProductId,
@@ -33,11 +33,11 @@ SELECT p.product_id        AS ProductId,
 
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
         var command = new CommandDefinition(sql, new { keyword }, cancellationToken: cancellationToken);
-        var items = await connection.QueryAsync<ProductSummaryDto>(command);
+        var items = await connection.QueryAsync<ProductSummary>(command);
         return items.AsList();
     }
 
-    public async Task<ProductDetailDto?> GetProductByIdAsync(long productId, CancellationToken cancellationToken)
+    public async Task<ProductDetail?> GetProductByIdAsync(long productId, CancellationToken cancellationToken)
     {
         const string sql = @"
 SELECT p.product_id         AS ProductId,
@@ -56,6 +56,7 @@ SELECT p.product_id         AS ProductId,
 
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
         var command = new CommandDefinition(sql, new { productId }, cancellationToken: cancellationToken);
-        return await connection.QuerySingleOrDefaultAsync<ProductDetailDto>(command);
+        return await connection.QuerySingleOrDefaultAsync<ProductDetail>(command);
     }
 }
+

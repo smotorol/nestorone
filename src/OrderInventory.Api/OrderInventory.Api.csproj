@@ -1,5 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <ItemGroup>
+    <ProjectReference Include="..\OrderInventory.Contracts\OrderInventory.Contracts.csproj" />
     <ProjectReference Include="..\OrderInventory.Application\OrderInventory.Application.csproj" />
     <ProjectReference Include="..\OrderInventory.Infrastructure\OrderInventory.Infrastructure.csproj" />
   </ItemGroup>

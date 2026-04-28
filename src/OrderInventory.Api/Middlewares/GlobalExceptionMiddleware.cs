@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
 using Oracle.ManagedDataAccess.Client;
-using OrderInventory.Api.Contracts.Common;
+using OrderInventory.Contracts.Common;
 
 namespace OrderInventory.Api.Middlewares;
 

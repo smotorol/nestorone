@@ -1,5 +1,5 @@
 ﻿using OrderInventory.Application.Abstractions;
-using OrderInventory.Application.Dtos.Products;
+using OrderInventory.Contracts.Products;
 
 namespace OrderInventory.Application.Services;
 
@@ -12,9 +12,10 @@ public sealed class ProductService : IProductService
         _productRepository = productRepository;
     }
 
-    public Task<IReadOnlyList<ProductSummaryDto>> GetProductsAsync(string? keyword, CancellationToken cancellationToken)
+    public Task<IReadOnlyList<ProductSummary>> GetProductsAsync(string? keyword, CancellationToken cancellationToken)
         => _productRepository.GetProductsAsync(keyword, cancellationToken);
 
-    public Task<ProductDetailDto?> GetProductByIdAsync(long productId, CancellationToken cancellationToken)
+    public Task<ProductDetail?> GetProductByIdAsync(long productId, CancellationToken cancellationToken)
         => _productRepository.GetProductByIdAsync(productId, cancellationToken);
 }
+

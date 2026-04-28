@@ -1,9 +1,10 @@
-﻿using OrderInventory.Application.Dtos.Products;
+﻿using OrderInventory.Contracts.Products;
 
 namespace OrderInventory.Application.Abstractions;
 
 public interface IProductRepository
 {
-    Task<IReadOnlyList<ProductSummaryDto>> GetProductsAsync(string? keyword, CancellationToken cancellationToken);
-    Task<ProductDetailDto?> GetProductByIdAsync(long productId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<ProductSummary>> GetProductsAsync(string? keyword, CancellationToken cancellationToken);
+    Task<ProductDetail?> GetProductByIdAsync(long productId, CancellationToken cancellationToken);
 }
+

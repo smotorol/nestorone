@@ -1,4 +1,6 @@
-﻿using OrderInventory.Client.WinForms.Models;
+﻿using OrderInventory.Contracts.Common;
+using OrderInventory.Contracts.Products;
+using OrderInventory.Contracts.Orders;
 using OrderInventory.Client.WinForms.Services;
 
 namespace OrderInventory.Client.WinForms.Forms;
@@ -64,7 +66,7 @@ public sealed class MainForm : Form
 
     private async Task CreateOrderAsync()
     {
-        if (_productsGrid.CurrentRow?.DataBoundItem is not ProductViewModel selected)
+        if (_productsGrid.CurrentRow?.DataBoundItem is not ProductSummary selected)
         {
             _resultLabel.Text = "오류: 상품을 먼저 선택하세요.";
             return;
@@ -73,7 +75,8 @@ public sealed class MainForm : Form
         var request = new CreateOrderRequest
         {
             CustomerName = _customerNameTextBox.Text,
-            Items = new List<CreateOrderItemRequest>
+            CreatedBy = "winforms-user",
+            Items = new List<CreateOrderItem>
             {
                 new()
                 {
@@ -97,3 +100,4 @@ public sealed class MainForm : Form
         }
     }
 }
+

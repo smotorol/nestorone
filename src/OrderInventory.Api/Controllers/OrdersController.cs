@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OrderInventory.Api.Contracts.Common;
 using OrderInventory.Application.Abstractions;
-using OrderInventory.Application.Dtos.Orders;
+using OrderInventory.Contracts.Common;
+using OrderInventory.Contracts.Orders;
 
 namespace OrderInventory.Api.Controllers;
 
@@ -17,16 +17,17 @@ public sealed class OrdersController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateOrderRequestDto request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create([FromBody] CreateOrderRequest request, CancellationToken cancellationToken)
     {
         var result = await _orderService.CreateOrderAsync(request, cancellationToken);
-        return Ok(ApiResponse<CreateOrderResultDto>.Ok(result, result.ResultMessage, HttpContext.TraceIdentifier, result.ResultCode, HttpContext.Request.Path));
+        return Ok(ApiResponse<CreateOrderResult>.Ok(result, result.ResultMessage, HttpContext.TraceIdentifier, result.ResultCode, HttpContext.Request.Path));
     }
 
     [HttpPost("{id:long}/cancel")]
-    public async Task<IActionResult> Cancel(long id, [FromBody] CancelOrderRequestDto request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Cancel(long id, [FromBody] CancelOrderRequest request, CancellationToken cancellationToken)
     {
         var result = await _orderService.CancelOrderAsync(id, request, cancellationToken);
-        return Ok(ApiResponse<CancelOrderResultDto>.Ok(result, result.ResultMessage, HttpContext.TraceIdentifier, result.ResultCode, HttpContext.Request.Path));
+        return Ok(ApiResponse<CancelOrderResult>.Ok(result, result.ResultMessage, HttpContext.TraceIdentifier, result.ResultCode, HttpContext.Request.Path));
     }
 }
+

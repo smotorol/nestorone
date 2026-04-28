@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace OrderInventory.Application.Dtos.Orders;
+namespace OrderInventory.Contracts.Orders;
 
-public sealed class CreateOrderItemDto
+public sealed class CreateOrderItem
 {
     [Range(1, long.MaxValue)]
     public long ProductId { get; init; }
@@ -10,3 +10,4 @@ public sealed class CreateOrderItemDto
     [Range(1, int.MaxValue)]
     public int OrderQty { get; init; }
 }
+

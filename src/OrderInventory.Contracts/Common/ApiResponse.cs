@@ -1,4 +1,4 @@
-﻿namespace OrderInventory.Api.Contracts.Common;
+﻿namespace OrderInventory.Contracts.Common;
 
 public sealed class ApiResponse<T>
 {

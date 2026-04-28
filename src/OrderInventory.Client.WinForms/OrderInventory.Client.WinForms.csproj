@@ -1,4 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\OrderInventory.Contracts\OrderInventory.Contracts.csproj" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -7,5 +11,3 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 </Project>
-
-

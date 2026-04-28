@@ -1,9 +1,10 @@
-﻿using OrderInventory.Application.Dtos.Orders;
+﻿using OrderInventory.Contracts.Orders;
 
 namespace OrderInventory.Application.Abstractions;
 
 public interface IOrderService
 {
-    Task<CreateOrderResultDto> CreateOrderAsync(CreateOrderRequestDto request, CancellationToken cancellationToken);
-    Task<CancelOrderResultDto> CancelOrderAsync(long orderId, CancelOrderRequestDto request, CancellationToken cancellationToken);
+    Task<CreateOrderResult> CreateOrderAsync(CreateOrderRequest request, CancellationToken cancellationToken);
+    Task<CancelOrderResult> CancelOrderAsync(long orderId, CancelOrderRequest request, CancellationToken cancellationToken);
 }
+
