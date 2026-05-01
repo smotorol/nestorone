@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using Dapper;
+using System.Data;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Oracle.ManagedDataAccess.Client;
@@ -17,6 +18,83 @@ public sealed class OrderRepository : IOrderRepository
     {
         _connectionFactory = connectionFactory;
         _logger = logger;
+    }
+
+    public async Task<IReadOnlyList<OrderSummary>> GetOrdersAsync(string? keyword, string? status, CancellationToken cancellationToken)
+    {
+        const string sql = @"
+SELECT o.order_id      AS OrderId,
+       o.order_no      AS OrderNo,
+       o.customer_name AS CustomerName,
+       o.order_status  AS OrderStatus,
+       o.total_amount  AS TotalAmount,
+       CAST(o.order_date AS TIMESTAMP) AS OrderDate,
+       CAST(o.cancel_date AS TIMESTAMP) AS CancelDate,
+       o.cancel_reason AS CancelReason
+  FROM orders o
+ WHERE (:keyword IS NULL
+        OR o.order_no LIKE '%' || :keyword || '%'
+        OR o.customer_name LIKE '%' || :keyword || '%')
+   AND (:status IS NULL OR o.order_status = :status)
+ ORDER BY o.order_id DESC";
+
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        var command = new CommandDefinition(sql, new { keyword, status }, cancellationToken: cancellationToken);
+        var items = await connection.QueryAsync<OrderSummary>(command);
+        return items.AsList();
+    }
+
+    public async Task<OrderDetail?> GetOrderByIdAsync(long orderId, CancellationToken cancellationToken)
+    {
+        const string headerSql = @"
+SELECT o.order_id      AS OrderId,
+       o.order_no      AS OrderNo,
+       o.customer_name AS CustomerName,
+       o.order_status  AS OrderStatus,
+       o.total_amount  AS TotalAmount,
+       CAST(o.order_date AS TIMESTAMP) AS OrderDate,
+       CAST(o.cancel_date AS TIMESTAMP) AS CancelDate,
+       o.cancel_reason AS CancelReason
+  FROM orders o
+ WHERE o.order_id = :orderId";
+
+        const string itemsSql = @"
+SELECT oi.order_item_id AS OrderItemId,
+       oi.product_id    AS ProductId,
+       p.product_code   AS ProductCode,
+       p.product_name   AS ProductName,
+       oi.order_qty     AS OrderQty,
+       oi.unit_price    AS UnitPrice,
+       oi.line_amount   AS LineAmount
+  FROM order_items oi
+  JOIN products p
+    ON p.product_id = oi.product_id
+ WHERE oi.order_id = :orderId
+ ORDER BY oi.order_item_id";
+
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        var headerCommand = new CommandDefinition(headerSql, new { orderId }, cancellationToken: cancellationToken);
+        var header = await connection.QuerySingleOrDefaultAsync<OrderDetail>(headerCommand);
+        if (header is null)
+        {
+            return null;
+        }
+
+        var itemsCommand = new CommandDefinition(itemsSql, new { orderId }, cancellationToken: cancellationToken);
+        var items = await connection.QueryAsync<OrderItemDetail>(itemsCommand);
+
+        return new OrderDetail
+        {
+            OrderId = header.OrderId,
+            OrderNo = header.OrderNo,
+            CustomerName = header.CustomerName,
+            OrderStatus = header.OrderStatus,
+            TotalAmount = header.TotalAmount,
+            OrderDate = header.OrderDate,
+            CancelDate = header.CancelDate,
+            CancelReason = header.CancelReason,
+            Items = items.ToList()
+        };
     }
 
     public async Task<CreateOrderResult> CreateOrderAsync(CreateOrderRequest request, CancellationToken cancellationToken)
@@ -84,4 +162,3 @@ public sealed class OrderRepository : IOrderRepository
         return new OracleParameter("p_items_json", OracleDbType.Clob, json, ParameterDirection.Input);
     }
 }
-
